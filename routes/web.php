@@ -12,6 +12,7 @@
 */
 
 Route::get('/', function () {
+    \Barryvdh\Debugbar\Facade::info(3333);
     return view('welcome');
 });
 
