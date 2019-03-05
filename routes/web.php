@@ -12,7 +12,9 @@
 */
 
 Route::get('/', function () {
-    \Barryvdh\Debugbar\Facade::info(3333);
+    \Illuminate\Support\Facades\Log::info('3333');
+    dispatch(new \App\Jobs\TestOne());
+    dispatch(new \App\Jobs\TestTwo());
     return view('welcome');
 });
 
