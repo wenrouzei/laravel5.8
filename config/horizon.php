@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'use' => 'default',
+    'use' => 'horizon',
 
     /*
     |--------------------------------------------------------------------------
@@ -139,10 +139,10 @@ return [
         'local' => [
             'supervisor-1' => [
                 'connection' => 'redis',
-                'queue' => ['default'],
+                'queue' => ['default', 'test'],
                 'balance' => 'simple',
                 'processes' => 3,
-                'tries' => 3,
+                'tries' => 1,
             ],
         ],
     ],
