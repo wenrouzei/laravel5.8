@@ -32,3 +32,11 @@ Route::get('/database', function () {
     dispatch((new \App\Jobs\TestTwo())->onConnection('database'));
     return view('welcome');
 });
+
+Route::get('/redis', function () {
+    // php artisan queue:work redis
+    dispatch((new \App\Jobs\TestTwo())->onConnection('redis'));
+    // php artisan queue:work redis
+    dispatch((new \App\Jobs\TestOne())->onConnection('redis')->onQueue('test'));
+    return view('welcome');
+});
