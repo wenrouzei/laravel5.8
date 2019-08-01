@@ -40,3 +40,8 @@ Route::get('/redis', function () {
     dispatch((new \App\Jobs\TestOne())->onConnection('redis')->onQueue('test'));
     return view('welcome');
 });
+
+Route::get('mongodb-log',function (){
+    \Illuminate\Support\Facades\Log::channel('mongodb')->info('test mongodb log.');
+    return view('welcome');
+});
