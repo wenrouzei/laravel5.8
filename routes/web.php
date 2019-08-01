@@ -12,12 +12,16 @@
 */
 
 Route::get('/', function () {
-    \Illuminate\Support\Facades\Log::info('3333');
-    dispatch(new \App\Jobs\TestOne());
-    dispatch(new \App\Jobs\TestTwo());
     return view('welcome');
 });
 
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+Route::get('/beanstalkd', function () {
+    // php artisan queue:work beanstalkd
+    dispatch((new \App\Jobs\TestOne())->onConnection('beanstalkd'));
+    dispatch((new \App\Jobs\TestTwo())->onConnection('beanstalkd'));
+    return view('welcome');
+});
