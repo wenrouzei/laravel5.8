@@ -25,3 +25,10 @@ Route::get('/beanstalkd', function () {
     dispatch((new \App\Jobs\TestTwo())->onConnection('beanstalkd'));
     return view('welcome');
 });
+
+Route::get('/database', function () {
+    // php artisan queue:work database
+    dispatch((new \App\Jobs\TestOne())->onConnection('database'));
+    dispatch((new \App\Jobs\TestTwo())->onConnection('database'));
+    return view('welcome');
+});
