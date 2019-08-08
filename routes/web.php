@@ -48,3 +48,9 @@ Route::get('mongodb-log',function (){
     \Illuminate\Support\Facades\Log::channel('mongodb')->info('test mongodb log.');
     return view('welcome');
 });
+
+
+Route::get('scout',function (){
+    dump(\App\User::search('bo')->first());
+    var_dump(\App\User::search('bo')->first());
+});
