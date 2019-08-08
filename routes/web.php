@@ -12,6 +12,9 @@
 */
 
 Route::get('/', function () {
+    \Illuminate\Support\Facades\Log::info('CustomizeFormatter');
+    \Illuminate\Support\Facades\Log::channel('daily')->info('CustomizeFormatter');
+    \Illuminate\Support\Facades\Log::channel('custom')->info('custom');
     return view('welcome');
 });
 

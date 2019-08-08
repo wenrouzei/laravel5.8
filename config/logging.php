@@ -53,6 +53,14 @@ return [
             'days' => 14,
         ],
 
+        'custom' => [
+            'driver' => 'daily',
+            'tap' => [App\Logging\CustomizeFormatter::class],
+            'path' => storage_path('logs/custom.log'),
+            'level' => 'debug',
+            'days' => 5,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),
