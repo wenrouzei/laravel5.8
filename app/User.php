@@ -5,6 +5,7 @@ namespace App;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Scout\Searchable;
 
 /**
  * App\User
@@ -33,7 +34,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  */
 class User extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, Searchable;
 
     /**
      * The attributes that are mass assignable.
@@ -61,4 +62,15 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+
+    // 定义有那些字段需要搜索
+    public function toSearchableArray()
+    {
+        return [
+            'user_name' => $this->name,  //user_name加上前缀以区别。因为不同的表里可能会有相同的字段。mysql中的字段是name,email,created_at。在es中我们存储的user_name，user_email,user_created_at。是可以自定义的。
+            'user_email' => $this->email,
+            'user_created_at' => $this->created_at,
+        ];
+    }
 }
