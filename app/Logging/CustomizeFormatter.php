@@ -9,6 +9,8 @@
 namespace App\Logging;
 
 
+use Monolog\Processor\MemoryPeakUsageProcessor;
+use Monolog\Processor\MemoryUsageProcessor;
 use Monolog\Processor\WebProcessor;
 
 class CustomizeFormatter
@@ -22,5 +24,7 @@ class CustomizeFormatter
     public function __invoke($logger)
     {
         $logger->pushProcessor(new WebProcessor($_SERVER)); // 记录额外的请求信息
+        $logger->pushProcessor(new MemoryPeakUsageProcessor()); // 内存峰值
+        $logger->pushProcessor(new MemoryUsageProcessor()); // 内存使用
     }
 }

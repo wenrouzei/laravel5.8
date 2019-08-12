@@ -21,17 +21,17 @@ class Event
      */
     public static function onWorkerStart(BusinessWorker $businessWorker)
     {
-        Log::debug('worker-id：' . $businessWorker->workerId);
+        Log::channel('custom')->debug('worker-id：' . $businessWorker->workerId);
     }
 
     public static function onConnect($clientId)
     {
-        Log::info('connect：' . $clientId);
+        Log::channel('custom')->info('connect：' . $clientId);
     }
 
     public static function onWebSocketConnect($clientId, $data)
     {
-        Log::info('ws connect：' . $clientId, ['$data' => $data]);
+        Log::channel('custom')->info('ws connect：' . $clientId, ['$data' => $data]);
     }
 
     public static function onMessage($clientId, $message)
@@ -41,11 +41,11 @@ class Event
         $user->email = Str::random(10) . '@' . Str::random(3) . '.com';
         $user->password = Str::random(16);
         $user->save();
-        Log::info($clientId . ' message：' . $message);
+        Log::channel('custom')->info($clientId . ' message：' . $message);
     }
 
     public static function onClose($clientId)
     {
-        Log::debug('close：' . $clientId);
+        Log::channel('custom')->debug('close：' . $clientId);
     }
 }
