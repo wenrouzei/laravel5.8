@@ -22,7 +22,9 @@ class WorkerManGateway extends Command
      *
      * @var string
      */
-    protected $description = 'Start Workerman gateway server.';
+    protected $description = 'workerman:gateway
+                              {action : 命令}
+                              {--daemon : 以守护进程方式启动}';
 
     /**
      * Create a new command instance.
@@ -48,6 +50,28 @@ class WorkerManGateway extends Command
         $argv[1] = $action;
         $argv[2] = $this->option('daemon') ? '-d' : '';
 
+        $this->init();
+    }
+
+    private function init()
+    {
+        ini_set('display_errors', 'on');
+        if (strpos(strtolower(PHP_OS), 'win') === 0) {
+            exit("not support windows.\n");
+        }
+
+        if (!extension_loaded('pcntl')) {
+            exit("Please install pcntl extension.\n");
+        }
+
+        if (!extension_loaded('posix')) {
+            exit("Please install posix extension.\n");
+        }
+
+        Worker::$stdoutFile = storage_path('workerman/stdout.log');
+        $unique_prefix = str_replace(DIRECTORY_SEPARATOR, '_', __FILE__);
+        Worker::$pidFile = storage_path("workerman/$unique_prefix.pid");
+        Worker::$logFile = storage_path('workerman/workerman.log');
         $this->start();
     }
 
@@ -75,9 +99,9 @@ class WorkerManGateway extends Command
         $gateway->count = 1;
         $gateway->lanIp = '127.0.0.1';
         $gateway->startPort = 2300;
-        $gateway->pingInterval = 30;
+        $gateway->pingInterval = 1;
         $gateway->pingNotResponseLimit = 0;
-        $gateway->pingData = '{"type":"@heart@"}';
+        $gateway->pingData = '{"type":"ping"}';
         $gateway->registerAddress = '127.0.0.1:1236';
     }
 

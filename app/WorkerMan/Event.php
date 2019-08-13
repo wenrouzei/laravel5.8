@@ -11,8 +11,10 @@ namespace App\WorkerMan;
 
 use App\User;
 use GatewayWorker\BusinessWorker;
+use GatewayWorker\Lib\Gateway;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Workerman\Lib\Timer;
 
 class Event
 {
@@ -27,6 +29,9 @@ class Event
     public static function onConnect($clientId)
     {
         Log::channel('custom')->info('connect：' . $clientId);
+        Timer::add(1, function ($clientId) {
+            Log::channel('custom')->debug($clientId);
+        }, [3333], true);
     }
 
     public static function onWebSocketConnect($clientId, $data)
