@@ -44,18 +44,19 @@ Route::get('/redis', function () {
     return view('welcome');
 });
 
-Route::get('mongodb-log',function (){
+Route::get('mongodb-log', function () {
     \Illuminate\Support\Facades\Log::channel('mongodb')->info('test mongodb log.');
     return view('welcome');
 });
 
-Route::get('elastic-search-log',function (){
-    \Illuminate\Support\Facades\Log::channel('elasticsearch')->info('test elasticsearch log.');
+Route::get('elastic-search-log', function () {
+    \Illuminate\Support\Facades\Log::channel('elasticsearch')->info('test elasticsearch info log.');
+    \Illuminate\Support\Facades\Log::channel('elasticsearch')->error('test elasticsearch error log.');
     return view('welcome');
 });
 
 
-Route::get('scout',function (){
+Route::get('scout', function () {
     dump(\App\User::search('bo')->first());
     var_dump(\App\User::search('bo')->first());
 });
