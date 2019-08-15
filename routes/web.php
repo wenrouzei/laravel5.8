@@ -49,6 +49,11 @@ Route::get('mongodb-log',function (){
     return view('welcome');
 });
 
+Route::get('elastic-search-log',function (){
+    \Illuminate\Support\Facades\Log::channel('elasticsearch')->info('test elasticsearch log.');
+    return view('welcome');
+});
+
 
 Route::get('scout',function (){
     dump(\App\User::search('bo')->first());

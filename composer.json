@@ -18,9 +18,9 @@
         "laravel/tinker": "^1.0",
         "mongodb/mongodb": "^1.4",
         "pda/pheanstalk": "^4.0",
-        "tamayo/laravel-scout-elastic": "^5.0",
         "workerman/gateway-worker": "^3.0",
-        "workerman/workerman": "^3.5"
+        "workerman/workerman": "^3.5",
+        "ruflin/elastica": "dev-master"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.2",

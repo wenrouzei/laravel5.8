@@ -2,6 +2,8 @@
 
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
+use App\Logging\CreateElasticSearchLogger;
+use App\Logging\CreateCustomLogger;
 
 return [
 
@@ -100,12 +102,22 @@ return [
 
         'mongodb' => [ // 此处可以根据需求调整
             'driver' => 'custom', // 此处必须为 `custom`
-            'via' => \App\Logging\CreateCustomLogger::class, // 当 `driver` 设置为 custom 时，使用 `via` 配置项所指向的工厂类创建 logger
+            'via' => CreateCustomLogger::class, // 当 `driver` 设置为 custom 时，使用 `via` 配置项所指向的工厂类创建 logger
 
             // 以下 env 配置名可以根据需求调整
             'server' => env('LOG_MONGO_SERVER', 'mongodb://localhost:27017'),
             'database' => env('LOG_MONGO_DB', 'logs'),
             'collection' => env('LOG_MONGO_COLLECTION', 'logs'),
+            'level' => env('LOG_MONGO_LEVEL', 'debug'), // 日志级别
+        ],
+
+        'elasticsearch' => [ // 此处可以根据需求调整
+            'driver' => 'custom', // 此处必须为 `custom`
+            'via' => CreateElasticSearchLogger::class, // 当 `driver` 设置为 custom 时，使用 `via` 配置项所指向的工厂类创建 logger
+
+            // 以下 env 配置名可以根据需求调整
+            'host' => env('LOG_ELASTIC_SEARCH_HOST', '127.0.0.1'),
+            'port' => env('LOG_ELASTIC_SEARCH_PORT', '9200'),
             'level' => env('LOG_MONGO_LEVEL', 'debug'), // 日志级别
         ],
     ],
