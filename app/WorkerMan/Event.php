@@ -29,9 +29,6 @@ class Event
     public static function onConnect($clientId)
     {
         Log::channel('custom')->info('connect：' . $clientId);
-        Timer::add(1, function ($clientId) {
-            Log::channel('custom')->debug($clientId);
-        }, [3333], true);
     }
 
     public static function onWebSocketConnect($clientId, $data)
@@ -41,11 +38,11 @@ class Event
 
     public static function onMessage($clientId, $message)
     {
-        $user = new User();
-        $user->name = Str::random(10);
-        $user->email = Str::random(10) . '@' . Str::random(3) . '.com';
-        $user->password = Str::random(16);
-        $user->save();
+//        $user = new User();
+//        $user->name = Str::random(10);
+//        $user->email = Str::random(10) . '@' . Str::random(3) . '.com';
+//        $user->password = Str::random(16);
+//        $user->save();
         Log::channel('custom')->info($clientId . ' message：' . $message);
     }
 
