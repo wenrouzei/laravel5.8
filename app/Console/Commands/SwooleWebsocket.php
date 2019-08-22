@@ -35,7 +35,7 @@ class SwooleWebsocket extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->pidFile = __DIR__ . '/../../../storage/swoole_websocket.pid';
+        $this->pidFile = __DIR__ . '/../../../storage/logs/swoole_websocket.pid';
         $this->logFile = __DIR__ . '/../../../storage/logs/swoole_websocket.log';
     }
 
