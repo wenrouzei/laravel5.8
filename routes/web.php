@@ -60,3 +60,8 @@ Route::get('scout', function () {
     dump(\App\User::search('bo')->first());
     var_dump(\App\User::search('bo')->first());
 });
+
+Route::get('snow-flake', function (){
+    $id = app('snowflake')->id();
+    dd($id, app('snowflake')->parseId($id));
+});

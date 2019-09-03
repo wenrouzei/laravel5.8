@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Godruoyi\Snowflake\LaravelSequenceResolver;
+use Godruoyi\Snowflake\Snowflake;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
@@ -45,6 +47,12 @@ class AppServiceProvider extends ServiceProvider
             // $event->connectionName
             // $event->job
             // $event->exception
+        });
+
+        $this->app->singleton('snowflake', function () {
+            return (new Snowflake())
+                ->setStartTimeStamp(strtotime('2019-09-01') * 1000)
+                ->setSequenceResolver(new LaravelSequenceResolver($this->app->get('cache')->store()));
         });
     }
 }
