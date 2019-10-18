@@ -20,6 +20,7 @@
         "mongodb/mongodb": "^1.4",
         "pda/pheanstalk": "^4.0",
         "ruflin/elastica": "dev-master",
+        "swooletw/laravel-swoole": "^2.6",
         "workerman/gateway-worker": "^3.0",
         "workerman/workerman": "^3.5"
     },
