@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\OriginalMessageJob;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Str;
 
 class PcntlDispatchOriginalMessages extends Command
 {
@@ -64,6 +66,12 @@ class PcntlDispatchOriginalMessages extends Command
 
     protected $masterPid;
 
+    protected $connections = [];
+
+    protected $connectionsLength = 0;
+
+    protected $memoryLimit = 50;
+
     /**
      * Create a new command instance.
      *
@@ -72,6 +80,14 @@ class PcntlDispatchOriginalMessages extends Command
     public function __construct()
     {
         parent::__construct();
+        //启动分发redis队列中的原始数据到laravel的队列任务中处理队列
+        $queues = config('database.redis');
+        foreach ($queues as $key => $queue) {
+            if (Str::startsWith($key, 'queue_')) {
+                $this->connections[] = $key;
+            }
+        }
+        if ($this->connections) $this->connectionsLength = count($this->connections);
     }
 
     /**
@@ -99,7 +115,7 @@ class PcntlDispatchOriginalMessages extends Command
                     $pid = $this->getPid();
                     $masterIsAlive = $pid && posix_kill($pid, 0) && posix_getpid() != $pid;
                     if ($masterIsAlive) {
-                        $this->error("\r\n" . $this->signature . " process already exist!\r\n");
+                        $this->error($this->signature . " process already exist!");
                         exit;
                     }
                     if ($this->option('daemon')) $this->daemon();
@@ -112,7 +128,7 @@ class PcntlDispatchOriginalMessages extends Command
                     $pid = $this->getPid();
                     $masterIsAlive = $pid && posix_kill($pid, 0) && posix_getpid() != $pid;
                     if (!$masterIsAlive) {
-                        $this->error("\r\n" . $this->signature . " process already exit!\r\n");
+                        $this->error($this->signature . " process already exit!");
                         exit;
                     }
                     posix_kill($pid, SIGINT);
@@ -121,7 +137,7 @@ class PcntlDispatchOriginalMessages extends Command
                     $pid = $this->getPid();
                     $masterIsAlive = $pid && posix_kill($pid, 0) && posix_getpid() != $pid;
                     if (!$masterIsAlive) {
-                        $this->error("\r\n" . $this->signature . " process already exit!\r\n");
+                        $this->error($this->signature . " process already exit!");
                         exit;
                     }
                     posix_kill($pid, SIGUSR1);
@@ -152,7 +168,7 @@ class PcntlDispatchOriginalMessages extends Command
         if (!extension_loaded('posix')) {
             exit("Please install posix extension.\n");
         }
-        $this->pidFile = storage_path('logs/' . str_replace(DIRECTORY_SEPARATOR, '_', __FILE__) . '.pid');
+        $this->pidFile = storage_path('pids/' . str_replace(DIRECTORY_SEPARATOR, '_', __FILE__) . '.pid');
         if (intval($workerCount = $this->argument('workerCount'))) $this->workerCount = $workerCount;
         $this->status = self::STATUS_STARTING;
     }
@@ -207,7 +223,7 @@ class PcntlDispatchOriginalMessages extends Command
                     unset($this->processChildIds[$key]);
                 }
             }
-            if ($this->status == self::STATUS_RELOADING) $this->forkWorkers();
+            if ($this->status != self::STATUS_SHUTDOWN) $this->forkWorkers();
         }
         Log::debug('主进程退出', ['$masterPid' => $this->masterPid, 'pid' => posix_getpid()]);
         @unlink($this->pidFile);
@@ -246,7 +262,7 @@ class PcntlDispatchOriginalMessages extends Command
     {
         $this->masterPid = posix_getpid();
         if (false === file_put_contents($this->pidFile, $this->masterPid) || (file_get_contents($this->pidFile) != $this->masterPid)) {
-            $this->error("\r\n" . $this->signature . " 保存主进程id失败!\r\n");
+            $this->error($this->signature . " 保存主进程id失败!");
             exit;
         }
     }
@@ -325,7 +341,26 @@ class PcntlDispatchOriginalMessages extends Command
      */
     protected function handleTask()
     {
-        sleep(rand(3, 10));
-        Log::debug('task finish', ['pid' => posix_getpid(), 'memory_get_usage()' => round(memory_get_usage() / 1024 / 1024, 2), 'memory_get_peak_usage' => round(memory_get_peak_usage() / 1024 / 1024, 2)]);
+        try {
+            if ($this->connectionsLength) {
+                $connection = bcmod(posix_getpid(), $this->connectionsLength);
+                if ($message = Redis::connection($this->connections[$connection])->rPop('public_opinion_analysis::origin')) {
+                    $data = json_decode($message, true);
+                    if ($data) dispatch((new OriginalMessageJob($data))->onQueue('opinion-analysis:origin-message'));
+                    Log::debug('task finish', ['$connection' => $this->connections[$connection], 'pid' => posix_getpid(), 'memory_get_usage()' => round(memory_get_usage() / 1024 / 1024, 2), 'memory_get_peak_usage' => round(memory_get_peak_usage() / 1024 / 1024, 2)]);
+                } else {
+                    usleep(300000);
+                }
+            } else {
+                Log::debug('Don\'t have connections; Task exit.', ['pid' => posix_getpid(), 'memory_get_usage()' => round(memory_get_usage() / 1024 / 1024, 2), 'memory_get_peak_usage' => round(memory_get_peak_usage() / 1024 / 1024, 2)]);
+                exit();
+            }
+        } catch (\Throwable $throwable) {
+            Log::error('task error', ['pid' => posix_getpid(), 'memory_get_usage()' => round(memory_get_usage() / 1024 / 1024, 2), 'memory_get_peak_usage' => round(memory_get_peak_usage() / 1024 / 1024, 2)]);
+        }
+        if (($memory = round(memory_get_usage() / 1024 / 1024, 2)) >= $this->memoryLimit) {
+            Log::error('超出限制内存(' . $this->memoryLimit . ')任务子进程退出', ['pid' => posix_getpid(), 'memory_get_usage()' => round(memory_get_usage() / 1024 / 1024, 2), 'memory_get_peak_usage' => round(memory_get_peak_usage() / 1024 / 1024, 2)]);
+            exit();
+        }
     }
 }
