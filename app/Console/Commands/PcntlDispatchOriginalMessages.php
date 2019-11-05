@@ -261,8 +261,8 @@ class PcntlDispatchOriginalMessages extends Command
         } elseif ($pid > 0) {
             $this->processChildIds[] = $pid;
         } else {
-            Log::debug('子进程启动', ['master_pid' => $this->masterPid, 'child_pid' => posix_getpid()]);
             $connection = bcmod(posix_getpid(), $this->connectionsLength);
+            Log::debug('子进程启动', ['master_pid' => $this->masterPid, 'child_pid' => posix_getpid(), '$connection' => $connection, 'queue' => $this->connections[$connection]]);
             while (true) {
                 $this->handleStop();
                 $this->handleTask($connection);
